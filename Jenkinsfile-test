@@ -1,0 +1,14 @@
+pipeline {
+  agent any
+  
+  stages {
+    stage('Set Variable') {
+      steps {
+        script {
+          def myVariable = "Hello, World!"
+          echo "Value of myVariable: ${myVariable}"
+        }
+      }
+    }
+  }
+}
