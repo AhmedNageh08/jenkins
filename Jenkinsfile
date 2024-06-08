@@ -28,7 +28,7 @@ pipeline {
                 script {
                     sh "docker stop flask-app || true"
                     sh "docker rm flask-app || true"
-                    sh "docker run -d -p 5000:5000 --name flask-app my-image:${env.GIT_COMMIT}"
+                    sh "docker run -d -p 5000:5000 --name flask-app ahmednageh08/flask-demo:${env.GIT_COMMIT}"
                 }
             }
         }
