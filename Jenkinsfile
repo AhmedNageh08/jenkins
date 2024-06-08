@@ -1,21 +1,35 @@
 pipeline {
-  agent any
-  
-  parameters {
-    string(name: 'NAME', defaultValue: '', description: 'Enter your name')
-    choice(name: 'EXPERIENCE', choices: ['less than 1', '+1', '+2', '+3'], description: 'Select your experience')
-  }
-  
-  stages {
-    stage('Print Output') {
-      steps {
-        script {
-          def name = params.NAME
-          def experience = params.EXPERIENCE
-          
-          echo "Your name is ${name} and you have ${experience} years of experience"
+    agent any
+    
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    def commitId = env.GIT_COMMIT
+                    sh "docker build -t ahmednageh08/flask-demo:${commitId} ."
+                }
+            }
         }
-      }
+        
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+                        sh "docker push ahmednageh08/flask-demo:${commitId}"
+                    }
+                }
+            }
+        }
+        
+        stage('Stop and Start Container') {
+            steps {
+                script {
+                    sh "docker stop flask-app || true"
+                    sh "docker rm flask-app || true"
+                    sh "docker run -d -p 5000:5000 --name flask-app my-image:${commitId}"
+                }
+            }
+        }
     }
-  }
-} 
+}
